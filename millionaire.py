@@ -230,25 +230,31 @@ class WhoWantsToBeaMillionaire:
   def __init__(self):
     self.prize = 0
     self.question_index = 0
+    self.question_number = 0
+    self.game_on = True
+    self.lifeline = input("Press ok to continue")
+    self.current_question = None
+
   # this introduces the game and the presentor
   def __repr__(self) -> str:
     print("Welcome to Who Wants To Be a Millionaire! \n My name is Vasco Palmeirim. Leeeeeet's Begiiin!")
 
   def play(self):
     print("Welcome to Who Wants To Be a Millionaire! \n My name is Vasco Palmeirim. Leeeeeet's Begiiin!")
+    print("If you want to get a lifeline just write 'help'")
+    
 
-    while self.prize < 500:
-      self.easy_game()
-      
-    while self.prize >= 500 and self.prize < 5000:
-      self.intermediate_game()
-      
-    while self.prize >= 5000 and self.prize < 10000:
-      self.hard_game()
+    while self.prize < 20000 and self.game_on:
+      if self.prize < 500:
+            self.easy_game()
     
-    while self.prize >= 10000 and self.prize < 1000000:
-      self.challenging_game()
-    
+      elif 500 <= self.prize < 5000:
+            self.intermediate_game()
+      elif 5000 <= self.prize < 15000:
+            self.hard_game()
+      elif 15000 <= self.prize < 20000:
+            self.challenging_game()
+
 
 
   #This is the function for easy questions being prompted to the user
@@ -262,20 +268,29 @@ class WhoWantsToBeaMillionaire:
     print(question_text)
 
     for answer in answers:
+      self.current_question = answer
       print(answer)
 
     get_user_input = input("Which answer is the correct one: ")
+    
+    if get_user_input.lower() == "help":
+      self.use_lifeline()
 
     if random_question["correct_answer"] == get_user_input.upper():
+
+        self.question_number += 1
         self.prize += 100
         print(f"Congratulations! Your prize is now in {self.prize}")
     else:
         self.prize = 0
+        self.question_number = 0
+
         print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
     
     self.easy_questions.remove(random_question)
         
   def intermediate_game(self):
+      print("Well done! We are now playing for 5000 euros!")
       random_question = random.choice(self.intermediate_questions)
       question_text = random_question['question']
       answers = random_question['options']
@@ -286,17 +301,25 @@ class WhoWantsToBeaMillionaire:
         print(answer)
 
       get_user_input = input("Which answer is the correct one: ")
+      if get_user_input.lower() == "help":
+        self.use_lifeline()      
 
       if random_question["correct_answer"] == get_user_input.upper():
           self.prize += 900
+          self.question_number += 1
+
           print(f"Congratulations! Your prize is now in {self.prize}")
       else:
-          self.prize = 500
+          self.prize = 0
+          self.question_number = 0
+
           print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
       
       self.intermediate_questions.remove(random_question)
            
   def hard_game(self):
+      print("Well done! We are now playing for 15000 euros!")
+
       random_question = random.choice(self.hard_questions)
       question_text = random_question['question']
       answers = random_question['options']
@@ -307,12 +330,17 @@ class WhoWantsToBeaMillionaire:
         print(answer)
 
       get_user_input = input("Which answer is the correct one: ")
-
+      
+      if get_user_input.lower() == "help":
+        self.use_lifeline()
       if random_question["correct_answer"] == get_user_input.upper():
+          self.question_number += 1
+
           self.prize += 2000
           print(f"Congratulations! Your prize is now in {self.prize}")
       else:
-          self.prize = 5000
+          self.question_number = 0
+          self.prize = 0
           print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
       
       self.hard_questions.remove(random_question)
@@ -325,26 +353,83 @@ class WhoWantsToBeaMillionaire:
       random_question = random.choice(self.challenging_questions)
       question_text = random_question['question']
       answers = random_question['options']
-      
+      self.game_on = False
       print(question_text)
 
       for answer in answers:
         print(answer)
 
       get_user_input = input("Which answer is the correct one: ")
-
+      if get_user_input.lower() == "help":
+        self.use_lifeline()
       if self.prize == 50000 and random_question['correct_answer'] == get_user_input.upper():
           self.prize = 1000000
           print("OH MY GOOOOD! YOU JUST WOOOON ONE MILLION EUROS! CONGRATULATIONS! What are you going to do with the money?")
       elif random_question["correct_answer"] == get_user_input.upper():
+          self.question_number += 1
           self.prize += 10000
           print(f"Congratulations! Your prize is now in {self.prize}")
       else:
           self.prize = 10000
+          self.question_number = 0
+
           print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
       
       self.challenging_questions.remove(random_question)
 
+  def use_lifeline(self):
+      print("Choose a lifeline:")
+      print("1. 50/50")
+      print("2. Phone a friend")
+      print("3. Ask the audience")
+
+      lifeline_choice = input("Enter the number of the lifeline you want to use: ")
+
+      if lifeline_choice == "1":
+          self.fifty_fifty()
+      elif lifeline_choice == "2":
+          self.phone_a_friend()
+      elif lifeline_choice == "3":
+          self.ask_the_audience()
+          
+  def fifty_fifty(self):
+        # Get the current question's correct answer
+        correct_answer = self.current_question['correct_answer']
+
+        # Get the answer options
+        answer_options = [option for option in self.current_question['options'] if option.startswith(correct_answer)]
+
+        # Randomly remove one incorrect answer
+        incorrect_answer = random.choice(list(set(self.get_current_question()['options']) - set(answer_options)))
+        answer_options.remove(incorrect_answer)
+
+        print(f"The 50/50 lifeline leaves you with the following options:")
+        for answer in answer_options:
+            print(answer)
+
+  def phone_a_friend(self):
+        # Assume the friend has a 60% chance of giving the correct answer
+        if random.random() <= 0.6:
+            print("Your friend suggests that the correct answer is:")
+            print(self.get_current_question()['correct_answer'])
+        else:
+            # Randomly choose an incorrect answer
+            incorrect_answers = list(set(self.get_current_question()['options']) - set(self.get_current_question()['correct_answer']))
+            random_incorrect_answer = random.choice(incorrect_answers)
+            print(f"Your friend suggests that the answer is:")
+            print(random_incorrect_answer)
+
+  def ask_the_audience(self):
+        # Assume the audience has a 70% chance of giving the correct answer
+        if random.random() <= 0.7:
+            print("The audience voted, and the majority believes the correct answer is:")
+            print(self.get_current_question()['correct_answer'])
+        else:
+            # Randomly choose an incorrect answer
+            incorrect_answers = list(set(self.get_current_question()['options']) - set(self.get_current_question()['correct_answer']))
+            random_incorrect_answer = random.choice(incorrect_answers)
+            print(f"The audience voted, and the majority believes the answer is:")
+            print(random_incorrect_answer)  
 
 
 teste = WhoWantsToBeaMillionaire()
