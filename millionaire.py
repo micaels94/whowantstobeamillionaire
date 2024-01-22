@@ -229,11 +229,10 @@ class WhoWantsToBeaMillionaire:
   # here we initiate the class setting the prize to 0€
   def __init__(self):
     self.prize = 0
-    self.question_index = 0
+    self.current_question_index = 0
     self.question_number = 0
     self.game_on = True
     self.lifeline = input("Press ok to continue")
-    self.current_question = None
 
   # this introduces the game and the presentor
   def __repr__(self) -> str:
@@ -266,15 +265,16 @@ class WhoWantsToBeaMillionaire:
     answers = random_question['options']
     
     print(question_text)
+    self.current_question = question_text
 
     for answer in answers:
-      self.current_question = answer
       print(answer)
 
+    print("This is the current question " + self.current_question)
     get_user_input = input("Which answer is the correct one: ")
     
     if get_user_input.lower() == "help":
-      self.use_lifeline()
+        self.use_lifeline(random_question)  # Pass the index
 
     if random_question["correct_answer"] == get_user_input.upper():
 
@@ -286,8 +286,11 @@ class WhoWantsToBeaMillionaire:
         self.question_number = 0
 
         print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
-    
+            # Save the index of the current question for later use
+    current_index = self.easy_questions.index(random_question)
+    self.current_question_index = current_index
     self.easy_questions.remove(random_question)
+    print(self.current_question_index)
         
   def intermediate_game(self):
       print("Well done! We are now playing for 5000 euros!")
@@ -377,7 +380,7 @@ class WhoWantsToBeaMillionaire:
       
       self.challenging_questions.remove(random_question)
 
-  def use_lifeline(self):
+  def use_lifeline(self, current_question):
       print("Choose a lifeline:")
       print("1. 50/50")
       print("2. Phone a friend")
@@ -386,28 +389,21 @@ class WhoWantsToBeaMillionaire:
       lifeline_choice = input("Enter the number of the lifeline you want to use: ")
 
       if lifeline_choice == "1":
-          self.fifty_fifty()
+          self.fifty_fifty(current_question)
       elif lifeline_choice == "2":
-          self.phone_a_friend()
+          self.phone_a_friend(current_question)
       elif lifeline_choice == "3":
-          self.ask_the_audience()
+          self.ask_the_audience(current_question)
           
-  def fifty_fifty(self):
-        # Get the current question's correct answer
-        correct_answer = self.current_question['correct_answer']
+  def fifty_fifty(self, current_question):
+        correct_answer = current_question['correct_answer']
+        incorrect_answers = [option for option in current_question['options'] \
+                             if option != correct_answer]
+        shown_option = random.choice(incorrect_answers)
+        print(f"The 50/50 lifeline leaves you with the following options: {correct_answer}, {shown_option}")  
 
-        # Get the answer options
-        answer_options = [option for option in self.current_question['options'] if option.startswith(correct_answer)]
 
-        # Randomly remove one incorrect answer
-        incorrect_answer = random.choice(list(set(self.get_current_question()['options']) - set(answer_options)))
-        answer_options.remove(incorrect_answer)
-
-        print(f"The 50/50 lifeline leaves you with the following options:")
-        for answer in answer_options:
-            print(answer)
-
-  def phone_a_friend(self):
+  def phone_a_friend(self, current_question):
         # Assume the friend has a 60% chance of giving the correct answer
         if random.random() <= 0.6:
             print("Your friend suggests that the correct answer is:")
@@ -419,7 +415,7 @@ class WhoWantsToBeaMillionaire:
             print(f"Your friend suggests that the answer is:")
             print(random_incorrect_answer)
 
-  def ask_the_audience(self):
+  def ask_the_audience(self, current_question):
         # Assume the audience has a 70% chance of giving the correct answer
         if random.random() <= 0.7:
             print("The audience voted, and the majority believes the correct answer is:")
