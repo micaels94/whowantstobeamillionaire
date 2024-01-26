@@ -7,6 +7,7 @@
 
 import random
 
+
 class WhoWantsToBeaMillionaire:
 # We're gonna need:
 # - We first need to print() a string presenting the show and that the user must have to answer all questions in order to win the prize
@@ -260,40 +261,41 @@ class WhoWantsToBeaMillionaire:
   #We get a random quention from the easy_questions array and we work with that. 
   #If the answer is correct we had 100 to the prize, otherwise we set the prize to 0    
   def easy_game(self):
-    random_question = random.choice(self.easy_questions)
-    question_text = random_question['question']
-    answers = random_question['options']
-    
-    print(question_text)
-    self.current_question = question_text
+        random_question = random.choice(self.easy_questions)
+        question_text = random_question['question']
+        answers = random_question['options']
+        
+        print(question_text)
+        self.current_question = question_text
 
-    for answer in answers:
-      print(answer)
+        for answer in answers:
+         print(answer)
 
-    print("This is the current question " + self.current_question)
-    get_user_input = input("Which answer is the correct one: ")
-    
-    if get_user_input.lower() == "help":
-        self.use_lifeline(random_question)  # Pass the index
+        print("This is the current question " + self.current_question)
+        
+        while True:  # Use a loop to keep asking in case "help" is inputted
+            get_user_input = input("Which answer is the correct one: ")
+            
+            if get_user_input.lower() == "help":
+                self.use_lifeline(random_question)  # Pass the index
+            else:  # it's not "help", so check the answer
+                if random_question["correct_answer"] == get_user_input.upper():
+                    self.question_number += 1
+                    self.prize += 100
+                    print(f"Congratulations! Your prize is now in {self.prize}")
+                    break   # We got the correct answer, so break the loop
+                else:
+                    self.prize = 0
+                    self.question_number = 0
+                    print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
+                    break   # We got a wrong answer and lost, so break the loop
 
-    if random_question["correct_answer"] == get_user_input.upper():
-
-        self.question_number += 1
-        self.prize += 100
-        print(f"Congratulations! Your prize is now in {self.prize}")
-    else:
-        self.prize = 0
-        self.question_number = 0
-
-        print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
-            # Save the index of the current question for later use
-    current_index = self.easy_questions.index(random_question)
-    self.current_question_index = current_index
-    self.easy_questions.remove(random_question)
-    print(self.current_question_index)
+        current_index = self.easy_questions.index(random_question)
+        self.current_question_index = current_index
+        self.easy_questions.remove(random_question)
         
   def intermediate_game(self):
-      print("Well done! We are now playing for 5000 euros!")
+      print(f"Well done! We are now playing for 5000 euros!")
       random_question = random.choice(self.intermediate_questions)
       question_text = random_question['question']
       answers = random_question['options']
@@ -302,22 +304,24 @@ class WhoWantsToBeaMillionaire:
 
       for answer in answers:
         print(answer)
+        
+      while True:  # Use a loop to keep asking in case "help" is inputted
+            get_user_input = input("Which answer is the correct one: ")
+            
+            if get_user_input.lower() == "help":
+                self.use_lifeline(random_question)  # Pass the index
+            else:  # it's not "help", so check the answer
+                if random_question["correct_answer"] == get_user_input.upper():
+                    self.question_number += 1
+                    self.prize += 1000
+                    print(f"Congratulations! Your prize is now in {self.prize}")
+                    break   # We got the correct answer, so break the loop
+                else:
+                    self.prize = 0
+                    self.question_number = 0
+                    print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
+                    break   # We got a wrong answer and lost, so break the loop
 
-      get_user_input = input("Which answer is the correct one: ")
-      if get_user_input.lower() == "help":
-        self.use_lifeline()      
-
-      if random_question["correct_answer"] == get_user_input.upper():
-          self.prize += 900
-          self.question_number += 1
-
-          print(f"Congratulations! Your prize is now in {self.prize}")
-      else:
-          self.prize = 0
-          self.question_number = 0
-
-          print(f"Oh noo! You lost your progress! The correct one was {random_question['correct_answer']}! Your prize is now in {self.prize}")
-      
       self.intermediate_questions.remove(random_question)
            
   def hard_game(self):
@@ -397,37 +401,63 @@ class WhoWantsToBeaMillionaire:
           
   def fifty_fifty(self, current_question):
         correct_answer = current_question['correct_answer']
+        resposta_certa = ""
+        for right_answer in current_question["options"]:
+            if right_answer[0] == correct_answer:
+                resposta_certa += str(right_answer)
+                
         incorrect_answers = [option for option in current_question['options'] \
-                             if option != correct_answer]
+                             if option != resposta_certa]
         shown_option = random.choice(incorrect_answers)
-        print(f"The 50/50 lifeline leaves you with the following options: {correct_answer}, {shown_option}")  
+        print(f"The 50/50 lifeline leaves you with the following options: {resposta_certa}, {shown_option}")  
 
 
   def phone_a_friend(self, current_question):
         # Assume the friend has a 60% chance of giving the correct answer
         if random.random() <= 0.6:
-            print("Your friend suggests that the correct answer is:")
-            print(self.get_current_question()['correct_answer'])
+            print("Your friend suggests that the correct answer is: " + str(current_question["correct_answer"]))
+            
         else:
             # Randomly choose an incorrect answer
-            incorrect_answers = list(set(self.get_current_question()['options']) - set(self.get_current_question()['correct_answer']))
+            incorrect_answers = [option for option in current_question['options'] if option != current_question['correct_answer']]
             random_incorrect_answer = random.choice(incorrect_answers)
             print(f"Your friend suggests that the answer is:")
             print(random_incorrect_answer)
 
+
   def ask_the_audience(self, current_question):
-        # Assume the audience has a 70% chance of giving the correct answer
-        if random.random() <= 0.7:
-            print("The audience voted, and the majority believes the correct answer is:")
-            print(self.get_current_question()['correct_answer'])
-        else:
-            # Randomly choose an incorrect answer
-            incorrect_answers = list(set(self.get_current_question()['options']) - set(self.get_current_question()['correct_answer']))
-            random_incorrect_answer = random.choice(incorrect_answers)
-            print(f"The audience voted, and the majority believes the answer is:")
-            print(random_incorrect_answer)  
+    options = current_question['options']
+    correct_answer = current_question['correct_answer']
+    correct_percent = round(random.uniform(45, 66), 1)
+    incorrect_percent = 100 - correct_percent
+    answers_array = []
+
+    # Randomly distribute the incorrect votes
+    for opt in options:
+        if opt[0] != correct_answer:
+            reducing_percent = round(random.uniform(1, incorrect_percent), 1)
+            answers_array.append(reducing_percent)
+            incorrect_percent -= reducing_percent
+            
+    #adding the percentages to the options
+    definitive_answers = {}
+    incorrect_answers = [opt for opt in options if opt[0] != correct_answer]
+    
+    for i, answer in enumerate(incorrect_answers):
+        definitive_answers[answer] = answers_array[i]
+    
+    for answer in options:
+        if answer[0] == correct_answer:
+           definitive_answers[answer] = correct_percent
+
+    print("The audience voted as follows:")
+    for key, value in definitive_answers.items():
+        print(f'{key}: {value}%')
+
 
 
 teste = WhoWantsToBeaMillionaire()
 
 print(teste.play())
+
+
